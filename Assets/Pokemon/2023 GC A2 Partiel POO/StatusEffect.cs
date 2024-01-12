@@ -8,21 +8,25 @@ namespace _2023_GC_A2_Partiel_POO.Level_2
     
     public class StatusEffect
     {
+        Fight _fight;
+        protected Character _character;
+
         /// <summary>
         /// Factory retournant un nouvel objet représentant le statut généré
         /// </summary>
         /// <param name="s">le statut à générer</param>
         /// <returns>Le statut à appliquer sur le character ciblé</returns>
-        public static StatusEffect GetNewStatusEffect(StatusPotential s)
+        public static StatusEffect GetNewStatusEffect(StatusPotential s, Fight fight, Character character)
         {
+            
             switch (s)
             {
                 case StatusPotential.SLEEP:
-                    return new SleepStatus();
+                    return new SleepStatus(fight, character);
                 case StatusPotential.BURN:
-                    return new BurnStatus();
+                    return new BurnStatus(fight, character);
                 case StatusPotential.CRAZY:
-                    return new CrazyStatus();
+                    return new CrazyStatus(fight, character);
                 case StatusPotential.NONE:
                 default:
                     return null;
@@ -35,12 +39,15 @@ namespace _2023_GC_A2_Partiel_POO.Level_2
         /// <param name="damageEachTurn">Nombre de dégât à la fin de chaque tour</param>
         /// <param name="canAttack">Le personnage peut-il attaquer ?</param>
         /// <param name="damageOnAttack">Portion de l'attaque auto-infligé au moment de l'attaque( 1f:100%, 0.5f:50% etc</param>
-        protected StatusEffect(int remainingTurn, int damageEachTurn, bool canAttack, float damageOnAttack)
+        protected StatusEffect(Fight fight, Character character,int remainingTurn=0, int damageEachTurn=0, bool canAttack=false, float damageOnAttack=0f)
         {
             RemainingTurn = remainingTurn;
             DamageEachTurn = damageEachTurn;
             DamageOnAttack = damageOnAttack;
             CanAttack = canAttack;
+            _character = character;
+            _fight = fight;
+            _fight.EndTurn += EndTurn;
         }
 
         /// <summary>
@@ -67,15 +74,23 @@ namespace _2023_GC_A2_Partiel_POO.Level_2
         public virtual void EndTurn()
         {
             RemainingTurn--;
+            if(RemainingTurn <= 0) Destroy();
+        }
+
+        public virtual void Destroy(){
+            _fight.EndTurn -= EndTurn;
+            _character.CurrentStatus = null;
         }
     }
+
+
 
     /// <summary>
     /// Endormi, le personnage ne peut pas attaquer
     /// </summary>
     public class SleepStatus : StatusEffect
     {
-        public SleepStatus() : base(5, 0, false, 0f)
+        public SleepStatus(Fight fight, Character character) : base(fight, character, 5, 0, false, 0f)
         {
         }
     }
@@ -85,8 +100,14 @@ namespace _2023_GC_A2_Partiel_POO.Level_2
     /// </summary>
     public class BurnStatus : StatusEffect
     {
-        public BurnStatus() : base(5, 10, true, 0f)
+        public BurnStatus(Fight fight, Character character) : base(fight, character,5, 10, true, 0f)
         {
+        }
+
+        public override void EndTurn()
+        {
+            _character.CurrentHealth -= DamageEachTurn;
+            base.EndTurn();
         }
     }
 
@@ -95,7 +116,7 @@ namespace _2023_GC_A2_Partiel_POO.Level_2
     /// </summary>
     public class CrazyStatus : StatusEffect
     {
-        public CrazyStatus() : base(1, 0, false, 0.3f)
+        public CrazyStatus(Fight fight, Character character) : base(fight, character,1, 0, false, 0.3f)
         {
         }
     }

@@ -1,5 +1,6 @@
 ﻿
 using System;
+using System.Numerics;
 
 namespace _2023_GC_A2_Partiel_POO.Level_2
 {
@@ -10,6 +11,8 @@ namespace _2023_GC_A2_Partiel_POO.Level_2
 
     public class TypeResolver
     {
+        
+        
 
         /// <summary>
         /// Récupère le facteur multiplicateur pour la résolution des résistances/faiblesses
@@ -27,7 +30,14 @@ namespace _2023_GC_A2_Partiel_POO.Level_2
         /// </returns>
         public static float GetFactor(TYPE attacker, TYPE receiver)
         {
-            throw new NotImplementedException();
+            float[,] typeMatrix = new float[,] {
+                {1,1   ,1   ,1   },
+                {1,1   ,.8f ,1.2f},
+                {1,1.2f,1   ,0.8f},
+                {1,0.8f,1.2f,1   }
+            };
+
+            return typeMatrix[(int)receiver, (int)attacker];
         }
 
     }
